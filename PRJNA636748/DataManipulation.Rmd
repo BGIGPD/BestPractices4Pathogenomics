@@ -1,0 +1,140 @@
+---
+title: "DataManipulation"
+author: "fangchao"
+date: "2024-10-03"
+output: html_document
+---
+
+If this is your first time to execute this file, please pay attention to check the availability of following packages.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+if (!require("ggplot2"))
+  install.packages("ggplot2")
+
+if (!require("dplyr"))
+  install.packages("dplyr")
+
+if (!require("readr"))
+  install.packages("readr")
+
+if (!require("stringr"))
+  install.packages("stringr")
+
+```
+
+# 1 Data collection
+
+Before start, please read the guidance from wiki and make sure the metadata of PRJNA636748 are already downloaded and stored under the same folder with this file.
+
+Try load metadata into R
+
+```{r load}
+metadata.tb <- read_csv("SraRunTable.txt")
+```
+
+## 2 Data landscapge
+
+Summary:
+
+```{r summary}
+summary(metadata.tb)
+```
+
+### 2.1 Geography distribution
+If we are curious about the samples collected from different regions:
+
+Using `table`:
+
+```{r}
+table(metadata.tb$geo_loc_name)
+```
+
+Or in a sorted way:
+
+```{r}
+rev(sort(table(metadata.tb$geo_loc_name)))
+```
+
+Try fix the errors:
+
+```{r}
+
+# Old fashion way
+metadata.tb$geo_loc_name[which(metadata.tb$geo_loc_name=="South Africa: Guateng")] <- "South Africa: Gauteng"
+
+# dplyr style
+metadata.fix.df <- metadata.tb %>%
+  mutate(geo_loc_name = str_replace_all(geo_loc_name, 
+    c("South Africa: Kwazulu-Natal" = "South Africa: KwaZulu-Natal", 
+      "South Africa: KwaZulu Natal" = "South Africa: KwaZulu-Natal",
+      "South Africa: Kwazulu natal" = "South Africa: KwaZulu-Natal",
+      "South Africa: unknown" = "South Africa: Unknown",
+      "South Africa: Freestate" = "South Africa: Free State")))
+
+rev(sort(table(metadata.fix.df$geo_loc_name)))
+```
+To visualize sample counts among geograpic locations
+```{r}
+p <- ggplot(metadata.fix.df,aes(x=geo_loc_name)) + geom_bar()
+
+p
+```
+
+Add `coord_flip` so the legend can be displayed better
+```{r}
+p + coord_flip()
+```
+
+How to reorder?
+```{r}
+revorder <- sort(table(metadata.fix.df$geo_loc_name))
+revorder
+metadata.fix.df$geo_loc_name <- factor(metadata.fix.df$geo_loc_name,levels=names(revorder))
+```
+
+```{r}
+ggplot(metadata.fix.df,aes(x=geo_loc_name)) + geom_bar() + coord_flip()
+```
+### 2.2 Platform / Instrument distribution
+```{r}
+table(metadata.fix.df$Instrument,metadata.fix.df$Platform)
+```
+Visualization:
+```{r}
+
+ins_order <- sort(table(metadata.fix.df$Instrument))
+metadata.fix.df$Instrument <- factor(metadata.fix.df$Instrument,levels=names(ins_order))
+ggplot(metadata.fix.df,aes(x=Instrument)) +
+  geom_bar(aes(fill=Platform))
+```
+### 2.3 Sequencing volume distribution
+```{r}
+
+ggplot(metadata.fix.df,aes(x=Bytes)) + geom_density()
+```
+Characteristics
+- Skewed Distribution
+- Two peaks, indicating two main distributions mixed;
+
+Solution:
+- log-transform
+- Find out the variable where the two distributions came from.
+
+```{r}
+ggplot(metadata.fix.df,aes(x=Bytes)) + geom_density() + 
+  scale_x_log10() + ggtitle("log10 scaled distribution")
+  
+
+ggplot(metadata.fix.df,aes(x=Bytes,color=Instrument)) + geom_density() +
+  ggtitle("Instrument colored distribution")
+
+ggplot(metadata.fix.df,aes(x=Bytes,color=collected_by)) + geom_density() +
+  ggtitle("Collecter colored distribution")
+
+```
+
+```{r}
+table(metadata.fix.df$Instrument,metadata.fix.df$LibraryLayout)
+```
+
