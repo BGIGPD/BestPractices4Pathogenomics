@@ -304,3 +304,5 @@ Export:
 write.csv(df_subsampled,"subsample_metadata.csv")
 ```
 
+This is all for today!  
+In the next course, we will attempt to download above subsampled dataset and execute a basic pipeline.  
