@@ -3,9 +3,13 @@ title: "DataManipulation"
 author: "fangchao"
 date: "2024-10-03"
 output: html_document
+editor_options: 
+  markdown: 
+    wrap: 80
 ---
 
-If this is your first time to execute this file, please pay attention to check the availability of following packages.
+If this is your first time to execute this file, please pay attention to check
+the availability of following packages.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -25,7 +29,9 @@ if (!require("stringr"))
 
 # 1 Data collection
 
-Before start, please read the guidance from wiki and make sure the metadata of PRJNA636748 are already downloaded and stored under the same folder with this file.
+Before start, please read the guidance from wiki and make sure the metadata of
+PRJNA636748 are already downloaded and stored under the same folder with this
+file.
 
 Try load metadata into R
 
@@ -33,7 +39,7 @@ Try load metadata into R
 metadata.tb <- read_csv("SraRunTable.txt")
 ```
 
-## 2 Data landscapge
+# 2 Data landscapge
 
 Summary:
 
@@ -41,7 +47,8 @@ Summary:
 summary(metadata.tb)
 ```
 
-### 2.1 Geography distribution
+## 2.1 Geography distribution
+
 If we are curious about the samples collected from different regions:
 
 Using `table`:
@@ -50,18 +57,18 @@ Using `table`:
 table(metadata.tb$geo_loc_name)
 ```
 
-Or in a sorted way:
+sorted:
 
 ```{r}
-rev(sort(table(metadata.tb$geo_loc_name)))
+sort(table(metadata.tb$geo_loc_name))
 ```
 
-Try fix the errors:
+Try uniform the names for better grouping:
 
 ```{r}
 
 # Old fashion way
-metadata.tb$geo_loc_name[which(metadata.tb$geo_loc_name=="South Africa: Guateng")] <- "South Africa: Gauteng"
+metadata.tb$geo_loc_name[which(metadata.tb$geo_loc_name=="South Africa: unknown")] <- "South Africa: Unknown"
 
 # dplyr style
 metadata.fix.df <- metadata.tb %>%
@@ -69,12 +76,17 @@ metadata.fix.df <- metadata.tb %>%
     c("South Africa: Kwazulu-Natal" = "South Africa: KwaZulu-Natal", 
       "South Africa: KwaZulu Natal" = "South Africa: KwaZulu-Natal",
       "South Africa: Kwazulu natal" = "South Africa: KwaZulu-Natal",
-      "South Africa: unknown" = "South Africa: Unknown",
-      "South Africa: Freestate" = "South Africa: Free State")))
+      "South Africa: KZN"           = "South Africa: KwaZulu-Natal",
+      "South Africa: nan"           = "South Africa: Unknown",
+      "South Africa: missing"       = "South Africa: Unknown",
+      "South Africa: Freestate"     = "South Africa: Free State",
+      "missing" = "Unknown")))
 
-rev(sort(table(metadata.fix.df$geo_loc_name)))
+sort(table(metadata.fix.df$geo_loc_name))
 ```
+
 To visualize sample counts among geograpic locations
+
 ```{r}
 p <- ggplot(metadata.fix.df,aes(x=geo_loc_name)) + geom_bar()
 
@@ -82,11 +94,13 @@ p
 ```
 
 Add `coord_flip` so the legend can be displayed better
+
 ```{r}
 p + coord_flip()
 ```
 
 How to reorder?
+
 ```{r}
 revorder <- sort(table(metadata.fix.df$geo_loc_name))
 revorder
@@ -96,11 +110,15 @@ metadata.fix.df$geo_loc_name <- factor(metadata.fix.df$geo_loc_name,levels=names
 ```{r}
 ggplot(metadata.fix.df,aes(x=geo_loc_name)) + geom_bar() + coord_flip()
 ```
-### 2.2 Platform / Instrument distribution
+
+## 2.2 Platform / Instrument distribution
+
 ```{r}
 table(metadata.fix.df$Instrument,metadata.fix.df$Platform)
 ```
+
 Visualization:
+
 ```{r}
 
 ins_order <- sort(table(metadata.fix.df$Instrument))
@@ -108,18 +126,19 @@ metadata.fix.df$Instrument <- factor(metadata.fix.df$Instrument,levels=names(ins
 ggplot(metadata.fix.df,aes(x=Instrument)) +
   geom_bar(aes(fill=Platform))
 ```
-### 2.3 Sequencing volume distribution
+
+## 2.3 Sequencing volume distribution
+
 ```{r}
 
 ggplot(metadata.fix.df,aes(x=Bytes)) + geom_density()
 ```
-Characteristics
-- Skewed Distribution
-- Two peaks, indicating two main distributions mixed;
 
-Solution:
-- log-transform
-- Find out the variable where the two distributions came from.
+Characteristics - Skewed Distribution - Two peaks, indicating two main
+distributions mixed;
+
+Solution: - log-transform - Find out the variable where the two distributions
+came from.
 
 ```{r}
 ggplot(metadata.fix.df,aes(x=Bytes)) + geom_density() + 
@@ -129,12 +148,159 @@ ggplot(metadata.fix.df,aes(x=Bytes)) + geom_density() +
 ggplot(metadata.fix.df,aes(x=Bytes,color=Instrument)) + geom_density() +
   ggtitle("Instrument colored distribution")
 
-ggplot(metadata.fix.df,aes(x=Bytes,color=collected_by)) + geom_density() +
-  ggtitle("Collecter colored distribution")
+
+ggplot(metadata.fix.df,aes(x=Bytes,color=Instrument)) + geom_density() + xlim(c(0,2e8)) +
+  ggtitle("Instrument colored distribution")
 
 ```
 
 ```{r}
 table(metadata.fix.df$Instrument,metadata.fix.df$LibraryLayout)
+```
+
+## 2.4 Collectors
+
+```{r}
+sort(names(table(metadata.fix.df$collected_by)))
+```
+
+Naming uniform: CDC - Africa Centers for Disease Control and Prevention AHRI -
+Africa Health Research Institute AMPATH - Academic Model Providing Access to
+Healthcare BARC - Bio Analytical Research Corporation CAPRISA - Centre for the
+AIDS Programme of Research in South Africa MRC - Medical Research Council NHLS -
+National Health Laboratory Service Netcare -
+
+```{r}
+metadata.fix.df$collected_by <- as.factor(metadata.fix.df$collected_by)
+```
+
+Check the factor's levels:
+
+```{r}
+levels(metadata.fix.df$collected_by)
+```
+
+rename the levels:
+
+```{r}
+levels(metadata.fix.df$collected_by) <- c(
+     "CDC SA",
+    "AHRI",
+    "AHRI",
+    "AHRI",
+    "AHRI",
+    "Ampath",
+    "Ampath",
+    "Ampath",
+    "AMPATH",
+    "BARC",
+    "BARC",
+    "BARC",
+    "CAPRISA",
+    "CAPRISA",
+    "CAPRISA",
+    "CAPRISA",
+    "Stellenbosch University",
+    "LANCET",
+    "missing",
+    "Molecular Diagnostics Services",
+    "MRC",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "Netcare",
+    "Netcare",
+    "Netcare",
+    "Netcare",
+    "Netcare",
+    "Netcare",
+    "Netcare",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "NHLS",
+    "PathCare",
+    "PathCare",
+    "University of Witwatersand",
+    "University of Witwatersand",
+    "University of Witwatersand",
+    "BARC",
+    "Stellenbosch University",
+    "Univeristy of Pretoria",
+    "University of Cape-Town",
+    "University of Freestate",
+    "University of Pretoria",
+    "University of Witwatersand"
+)
+```
+
+```{r}
+levels(metadata.fix.df$collected_by)
+```
+
+```{r}
+revorder <- sort(table(metadata.fix.df$collected_by))
+revorder
+metadata.fix.df$collected_by <- factor(metadata.fix.df$collected_by,levels=names(revorder))
+
+
+ggplot(metadata.fix.df,aes(x=collected_by)) + geom_bar() + coord_flip()
+  ggtitle("Instrument colored distribution")
+```
+
+boxplot
+
+```{r}
+ggplot(metadata.fix.df,aes(x=collected_by,y=Bytes)) +
+  geom_boxplot() + coord_flip()
+```
+
+```{r}
+ggplot(metadata.fix.df,aes(x=collected_by,y=Bytes,fill=Instrument)) +
+  geom_boxplot() + coord_flip() + ylim(c(0,1e7))
+```
+
+# 3 Subsampling dataset
+
+Fell free to modify this section to fit your interested question:)
+
+Example question: Does the virus strains different among geographic regions? -
+Number of samples picking for each group: 3 - Only use Illumina MiSeq to avoid
+bias between instruments
+
+```{r}
+df_subsampled <- metadata.fix.df %>%
+  filter(Instrument=="Illumina MiSeq" & 
+           collected_by %in% c("NHLS","PathCare")) %>%
+  group_by(geo_loc_name) %>%
+  sample_n(size = 3) %>%
+  ungroup()
+```
+
+`filter(Instrument=="Illumina MiSeq")`: Filters the data to keep only the rows
+where the Instrument column is equal to "Illumina MiSeq".
+
+`group_by(geo_loc_name)`: Groups the data by the `geo_loc_name column`.
+
+`sample_n(size = 3)`: Randomly samples 3 rows from each group created by the
+previous group_by() operation.
+
+`ungroup()`: Removes the grouping structure from the data frame. This is often
+done after a grouped operation to ensure that subsequent operations are
+performed on the entire data frame and not on grouped subsets.
+
+```{r}
+ggplot(df_subsampled,aes(x=geo_loc_name,y=Bytes)) + 
+  geom_boxplot() + geom_jitter(width=.2) + coord_flip()
+```
+
+Export:
+```{r}
+write.csv(df_subsampled,"subsample_metadata.csv")
 ```
 
