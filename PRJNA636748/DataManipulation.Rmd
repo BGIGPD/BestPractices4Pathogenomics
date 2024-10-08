@@ -267,6 +267,21 @@ ggplot(metadata.fix.df,aes(x=collected_by,y=Bytes,fill=Instrument)) +
 
 # 3 Subsampling dataset
 
+In case of internet unavailable, here is a pre-downloaded dataset:
+```{r}
+df_sub_demo <- metadata.fix.df %>%
+  filter(Bytes < 1e7) %>%
+  group_by(geo_loc_name,Instrument,collected_by) %>%
+  sample_n(size = 10,replace = TRUE) %>%
+  ungroup()
+
+df_sub_demo <- unique(df_sub_demo)
+
+write.csv(df_sub_demo,"demo_metadata.csv")
+
+```
+
+
 Fell free to modify this section to fit your interested question:)
 
 Example question: Does the virus strains different among geographic regions? -
