@@ -12,7 +12,8 @@ If this is your first time to execute this file, please pay attention to check
 the availability of following packages.
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+#install.packages("knitr")
+#knitr::opts_chunk$set(echo = TRUE)
 if (!require("ggplot2"))
   install.packages("ggplot2")
 
@@ -269,6 +270,7 @@ ggplot(metadata.fix.df,aes(x=collected_by,y=Bytes,fill=Instrument)) +
 
 In case of internet unavailable, here is a pre-downloaded dataset:
 ```{r}
+set.seed(1)
 df_sub_demo <- metadata.fix.df %>%
   filter(Bytes < 1e7) %>%
   group_by(geo_loc_name,Instrument,collected_by) %>%
@@ -289,7 +291,8 @@ Number of samples picking for each group: 3 - Only use Illumina MiSeq to avoid
 bias between instruments
 
 ```{r}
-df_subsampled <- metadata.fix.df %>%
+set.seed(1)
+df_subsampled <- df_sub_demo %>%
   filter(Instrument=="Illumina MiSeq" & 
            collected_by %in% c("NHLS","PathCare")) %>%
   group_by(geo_loc_name) %>%
