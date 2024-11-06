@@ -19,6 +19,10 @@ if (!require("readxl"))
 
 if (!require("reshape2"))
   install.packages("reshape2")
+
+if (!require("pheatmap"))
+  install.packages("pheatmap")
+
 ```
 
 # What will we learn in this chapter
@@ -232,8 +236,6 @@ beta.meta.df <- merge(
 beta.meta.df <- beta.meta.df[!duplicated(beta.meta.df$GPS),]
 rownames(beta.meta.df) <- beta.meta.df$GPS
 
-library(pheatmap)
-
 pheatmap(beta.bray.dist,
          annotation_row = beta.meta.df[,c("Region0"),F])
 
@@ -242,4 +244,10 @@ pheatmap(beta.jaccard.dist,
 
 pheatmap(beta.euclidean.dist,
          annotation_row = beta.meta.df[,c("Region0"),F])
+```
+
+Beta diversity reflects the similarity of viral taxonomic diversity among different samples/ regions, with smaller distance values indicating a higher degree of similarity. Therefore, it is essentially a distance matrix. For details on different distance algorithms, you can find their formulas by typing \`?vegdist\` in the console.
+
+```{r}
+?vegdist
 ```
