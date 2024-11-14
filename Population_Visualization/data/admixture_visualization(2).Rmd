@@ -1,0 +1,142 @@
+---
+title: "Admixture Analysis Visualization"
+author: "Liu ji"
+date: "2024-11-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Admixture Analysis in R
+
+## 1. Load Required Libraries
+
+```{r load-packages}
+# Define required packages
+required_packages <- c("sf", "tidyverse", "ggforce", "mapmixture", "gridExtra")
+
+# Install missing packages if needed
+for (package in required_packages) {
+  if (!require(package, character.only = TRUE)) {
+    install.packages(package, dependencies = TRUE)
+    library(package, character.only = TRUE)
+  }
+}
+
+# Load libraries
+library(sf)
+library(tidyverse)
+library(ggforce)
+library(mapmixture)
+library(gridExtra)
+```
+
+## 2. Load Map Data of China
+
+```{r load-map}
+china_map_geojson <- st_read("https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json")
+```
+
+## 3. Load Admixture Data and Sample-Province Mapping Data
+
+```{r load-data}
+A_alb_Q <- read.table("A_alb.5.Q.tab", header = FALSE)
+sample_province <- read.csv("sample_province.csv", sep = ",", header = TRUE)
+coordinates <- read.csv("china_provinces_lat_lon.csv")
+```
+
+## 4. Define Column Names
+
+```{r define-columns}
+colnames(A_alb_Q) <- c("Ind", paste("Cluster", 1:(ncol(A_alb_Q) - 1), sep = ""))
+```
+
+## 5. Merge Data
+
+```{r merge-province}
+admixture1 <- A_alb_Q %>%
+  left_join(sample_province, by = "Ind") %>%
+  rename(Site = Province) %>%
+  select(Site, Ind, everything())
+```
+
+## 6. Calculate Sample Counts
+
+```{r sample-count}
+site_sample_count <- admixture1 %>%
+  group_by(Site) %>%
+  summarise(sample_count = n()) %>%
+  mutate(pie_size = log1p(sample_count))
+```
+
+## 7. Average Population Structure
+
+```{r mean-structure}
+admixture_avg <- admixture1 %>%
+  group_by(Site) %>%
+  summarise(across(starts_with("Cluster"), mean))
+```
+
+## 8. Merge Coordinates
+
+```{r merge-coordinates}
+coordinates_filtered <- coordinates %>%
+  filter(Site %in% unique(admixture1$Site)) %>%
+  left_join(site_sample_count, by = "Site")
+```
+
+## 9. Convert to Long Format
+
+```{r long-format}
+admixture_long <- admixture_avg %>%
+  pivot_longer(cols = starts_with("Cluster"), names_to = "Cluster", values_to = "value") %>%
+  left_join(coordinates_filtered, by = "Site")
+```
+
+## 10. Plot Map with Pie Charts
+
+```{r plot-map, fig.width=10, fig.height=8}
+map <- ggplot() +
+  geom_sf(data = china_map_geojson, fill = "white", color = "gray") +
+  geom_arc_bar(
+    data = admixture_long,
+    aes(
+      x0 = Lon, y0 = Lat, r0 = 0, r = pie_size / 2,
+      amount = value, fill = Cluster
+    ),
+    stat = "pie", inherit.aes = FALSE, color = "black"
+  ) +
+  scale_fill_manual(
+    values = c("#FF6B6B", "#4ECDC4", "#556270", "#f1a340", "#998ec3"),
+    labels = paste("Ancestry", 1:length(unique(admixture_long$Cluster)), sep = "")
+  ) +
+  coord_sf(xlim = c(73, 135), ylim = c(18, 54), crs = 4326) +
+  labs(fill = "Ancestry") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 16), legend.position = "right")
+```
+
+## 11. Structure Plot
+
+```{r structure-plot, fig.width=8, fig.height=4}
+structure_barplot <- structure_plot(
+  admixture_df = admixture1,
+  type = "structure",
+  cluster_cols = c("#FF6B6B", "#4ECDC4", "#556270", "#f1a340", "#998ec3"),
+  site_dividers = TRUE,
+  divider_width = 0.4,
+  labels = "site",
+  flip_axis = FALSE,
+  site_ticks_size = -0.05,
+  site_labels_size = 2.2
+) +
+  theme(axis.title.y = element_text(size = 8, hjust = 1), axis.text.y = element_text(size = 5))
+```
+
+## 12. Arrange Plots
+
+```{r arrange-plots, fig.width=10, fig.height=12}
+grid.arrange(map, structure_barplot, nrow = 2, heights = c(3, 1))
+```
