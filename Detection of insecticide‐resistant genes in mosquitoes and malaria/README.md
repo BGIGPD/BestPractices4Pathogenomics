@@ -6,7 +6,7 @@ This course will guide you through detecting resistance genes in mosquitoes. Wit
 **FastD** is a comprehensive platform to analyze insecticide resistance through two main mechanisms:
 1. **FastD_TR** detects target-site mutations associated with insecticide resistance from RNA-Seq data.
    - Target genes include: `AChE, VGSC, RyR, nAChR`
-![image](https://github.com/user-attachments/assets/dd770dfb-49e7-4b77-a140-ad79123bc98a)
+![image](https://github.com/user-attachments/assets/78111f51-be80-4819-8fb9-024b56ab6443)
 
 2. **FastD_MR** detects overexpressed detoxification genes associated with insecticide resistance.
    - Target genes include: `P450, GST, CCE`
