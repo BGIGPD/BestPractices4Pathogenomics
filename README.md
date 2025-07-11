@@ -6,27 +6,17 @@ Let's focus on the analysis process itself.
 
 # How to Use This Project?
 
-## Read the Course Guidelines
-Please review the course details in the wiki pages.
-You can find it on the navigation bar or simply click here: [Wiki](https://github.com/BGIGPD/BestPractices4Pathogenomics/wiki).
+## 2025年7月培训
 
-## Clone This Project into Your Workspace
+1. [Methodology](../../wiki/Methodology-zh): 生信方法学、准备工作与基础操作
+2. [Virome Analysis in Metagenomics](../../wiki/Virome-Analysis-in-Metagenomics): 病毒宏基因组学分析流程
 
-In principle, you can practice our courses wherever you want: local terminals on your laptop, clusters behind a Bastion Host, or even cloud servers like AWS, GCP, etc.
-Let's assume we are going to start our work in the `home` folder.
-After logging into the host, try the following:
 
+## For previous students
+Switch branch to corresponding tag, e.g, `2025`. After `git clone`, run:
 ```bash
-git clone https://github.com/BGIGPD/BestPractices4Pathogenomics.git
+git checkout 2025
 ```
-Enter the project directory:
-```bash
-cd BestPractices4Pathogenomics
-```
-
-Then practice according to the course code notes.
-
-## Push Your Work Back Here So We Can Share with Each Other
 
 # Notion
 For security reasons, please do NOT store and push any personal or sensitive information into this project.
