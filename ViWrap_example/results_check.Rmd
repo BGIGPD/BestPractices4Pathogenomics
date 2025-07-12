@@ -12,7 +12,250 @@ library(dplyr)
 library(ggplot2)
 ```
 
+# R 基础练习
+
+1.检查当前目录：
+
+```{r,eval=FALSE}}
+getwd()
+```
+
+2.进入目录
+
+```{r,eval=FALSE}}
+setwd("/Users/ciao/repo/github.com/BGIGPD/BestPractices4Pathogenomics/ViWrap_example")
+```
+
+3.  创建目录
+
+```{r,eval=FALSE}}
+dir.create("data")
+```
+
+检查data目录是否存在
+```{r}
+dir.exists("data")
+```
+
+
+4.  数据类型
+
+数值变量
+
+```{r}
+num_vector <- c(1.5, 50, pi)
+
+str(num_vector)
+```
+
+字符变量
+
+```{r}
+chr_vector <- c("a", "c", "1")
+str(chr_vector)
+```
+
+分类变量
+
+```{r}
+fac_vector <- factor(c("aaaaaaaaa", "c", "2","aaaaaaaaa"))
+levels(fac_vector)
+str(fac_vector)
+```
+
+
+5.变量检查
+
+```{r}
+# is it a vector?
+  is.vector(num_vector)
+  is.numeric(num_vector)
+  is.character(num_vector)
+```
+
+
+```{r}
+x <- 3
+x
+is.vector(x)
+
+y <- c(1:100)
+y
+is.vector(y)
+
+# data type of a vector
+  typeof(num_vector)
+  
+  typeof(int_vector)
+  
+  typeof(char_vector)
+  
+  typeof(log_vector)
+
+# how many elements in a vector
+  length(y)
+  
+  length(x)
+  
+  length(char_vector)
+
+# unique elements in a vector
+  unique(int_vector)
+
+# summary of a vector
+  str(char_vector)
+  
+  str(x)
+  
+  summary(char_vector)
+  
+  summary(y)
+```
+
+截取向量
+
+```{r}
+  x <- seq(1,10)
+  x[3]
+  
+  x[c(4,2)]
+
+  z <- x[c(3,4,2,1,2,4,5)] 
+
+  
+  x[-1] # 这会删除第一个向量
+  x[-c(1,2)] # 删除第一个和第二个向量,多个向量需要加括号
+  
+  x[0]  # what it is? is it a vector?
+  is.vector(x[0])
+  typeof(x[0])
+  length(x[0])
+  
+  x[1:3] # 1 to 3, inclusive
+  x[7] # NA means not avaible or missing elements
+```
+
+变量筛选
+
+```{r}
+z <- seq(1,10)
+z > 2
+  
+z[z > 2]
+
+# subset a vector with multiple conditions
+
+z[z >= 2 & z < 4]
+
+z[z < 2 | z > 3]
+
+char_vector[char_vector == "world" | char_vector == "work"]
+
+char_vector[char_vector %in% c("world", "work","holiday")]
+
+
+# operator %in%
+
+z[z %in% c(2:4)]  # the same results as z[z >= 2 & z<= 4]
+
+```
+
+创建数据框
+
+```{r}
+df <- data.frame(
+  ID = c(1:3),
+  Name = c("Alice", "Bob", "Charlie"),
+  Age = c(23, 34, 21),
+  Grad = c(TRUE, TRUE, FALSE)
+)
+# display the data frame: each column is a variable, each row represents a person
+
+df
+```
+
+数据框操作
+
+```{r}
+# Is it a data frame?
+is.data.frame(df)
+
+# size of a data frame
+
+nrow(df) # the number of rows
+ncol(df) # the number of columns
+dim(df) # the dimensions of the data frame
+
+# content of a data frame
+head(df) # shows the first 6 rows of the data frame
+tail(df) # shows the last 6 rows of the data frame
+View(df)
+
+# name of columns
+names(df)
+
+# summary
+str(df)
+summary(df)
+```
+
+数据框筛选
+
+```{r}
+df[2,3]  # 显示第二行第三列
+
+df[2:3, 1:2]
+df[c(1,3), c(2,4)]
+df[-2,c(-1,-3)]
+
+# 指定列
+df[3, ]
+df[2:3, ]
+
+# 指定行
+df[, c(1,4)]
+
+df[c(1,4)]
+is.data.frame(df[c(1,4)])
+
+# use column names to extract column(s)
+df[c("ID", "Name")]
+
+df["Age"]
+is.data.frame(df["Age"])
+
+# Use [[]] to extract a column, the output is a vector
+
+df[[3]]  # use [[]] to extract a specific column
+
+is.data.frame(df[[3]])
+is.vector(df[[3]])
+
+df[[3:4]]  # the output of [[]] a vector 
+
+# Use $ to extract a vector, the output is a vector
+
+df$Age  # use $ to extract a specific column
+
+is.data.frame(df$Age)
+is.vector(df$Age)
+```
+
 # 0.下载或解压结果文件
+
+同步数据方式很多，选择最方便的方式即可。
+
+0.1 git 同步
+
+```{bash}
+cd ~/BestPractices4Pathogenomics/ViWrap_example
+git pull origin main
+```
+
+0.2 从服务器下载 远程下载的命令也很多，如rsync，scp，wget，curl等。堡垒机还需要连接专门的sftp工具才能访问。
+
+0.3 解压压缩包，生成结果目录
+
 ```{bash}
 tar zxvf 08_ViWrap_summary_outdir.tar.gz
 ```
@@ -20,12 +263,31 @@ tar zxvf 08_ViWrap_summary_outdir.tar.gz
 # 1.Summary
 
 ```{r}
-summary.df <- read.table("test_metaG_ViWrap_out/08_ViWrap_summary_outdir/Virus_summary_info.txt",
-                         header=T,sep="\t")
+summary.df <- read.table(
+  "./test_metaG_ViWrap_out/08_ViWrap_summary_outdir/Virus_summary_info.txt",
+  header=T,sep="\t")
+
+str(summary.df)
+summary.df$scaffold_num_factor <- as.factor(summary.df$scaffold_num)
+str(summary.df)
+```
+
+1.1 genome size
+
+```{r}
+density(summary.df$genome_size)
+```
+```{r}
+ggplot(summary.df[summary.df$genome_size<10000, ],
+       aes(x=genome_size)) + geom_histogram() +
+  ggtitle("Genome size")
+
+ggplot(summary.df,
+       aes(x=genome_size)) + geom_density() +
+  ggtitle("Genome size")
 ```
 
 
-1.1 genome size
 ```{r}
 p11 <- ggplot(summary.df,aes(x=genome_size)) + geom_histogram() +
   ggtitle("Genome size")
@@ -33,7 +295,8 @@ p11
 p11 + xlim(c(7500,10000))
 ```
 
-1.2 proteins 
+1.2 proteins
+
 ```{r}
 p12 <- ggplot(summary.df,aes(x=genome_size,y=protein_count)) + geom_point() +
   ggtitle("Proteins to genome size")
@@ -43,6 +306,7 @@ p12 + xlim(c(8000,9000))
 ```
 
 1.3 completeness
+
 ```{r}
 p13 <- ggplot(summary.df,aes(x=genome_size,y=completeness)) + 
   geom_point(aes(color=completeness_method)) +
@@ -53,15 +317,17 @@ p13 + xlim(c(8000,9000))
 ```
 
 ```{r}
+# install.packages("ggpubr)
 library(ggpubr)
-ggplot(summary.df%>%filter(completeness_method!=""),
+ggplot(summary.df%>%filter(completeness_method!="" & completeness < 80),
        aes(x=completeness_method,y=completeness)) + 
   geom_boxplot(aes(fill=completeness_method)) +
-  stat_compare_means(label="p.format") +
+  stat_compare_means() +
   ggtitle("Proteins to genome size")
 ```
 
 # 2 Abundance
+
 ```{r}
 abun.df <- read.table(
   "test_metaG_ViWrap_out/08_ViWrap_summary_outdir/Virus_normalized_abundance.txt",
@@ -70,6 +336,7 @@ abun.df <- read.table(
 abun.df$bin <- rownames(abun.df)
 
 top_abun.df <- abun.df[rev(order(abun.df$MeanCov.Percent))[1:10],]
+
 top_abun.df$bin <- factor(top_abun.df$bin,levels=c(top_abun.df$bin,"others"))
 oth_abun.df <- colSums(abun.df[rev(order(abun.df$MeanCov.Percent))[-c(1:10)],-5])
 oth_abun.df$bin <- "others"
@@ -78,27 +345,39 @@ sim_abun.df <- rbind( top_abun.df, oth_abun.df )
 
 ggplot(sim_abun.df,aes(x=bin,y=reads.Percent)) + 
   geom_bar(stat="identity") +
-  theme(axis.text.x=element_text(angle = -45,hjust=0))
+  theme(axis.text.x = element_text(angle = -45, hjust = 0))
 ```
 
 # 3 taxonomic annoatation
+
 ```{r}
+tmp <- read.table(
+  "test_metaG_ViWrap_out/08_ViWrap_summary_outdir/Tax_classification_result.txt",
+  sep="\t", col.names = c("bin","taxon","method"))
+
 taxon.df <- read.table(
   "test_metaG_ViWrap_out/08_ViWrap_summary_outdir/Tax_classification_result.txt",
-  sep="\t",col.names = c("bin","taxon","note"))
+  sep="\t", col.names = c("bin","taxon","method"))
 
 # decode taxonomic ranks
 taxons_split <- strsplit(taxon.df$taxon,";")
+# 将二维数组taxons_split中的每个数组的第5个元素提取出来
+taxon.df$taxon <- sapply(taxons_split,"[",5)
 
+
+# dplyr
 taxon.df$Phylum <- sapply(taxons_split,"[",3)
 taxon.df$Family <- sapply(taxons_split,"[",6)
+
 ```
 
 merge:
+
 ```{r}
 abun_anno.df <- merge(abun.df,taxon.df,by="bin",all.x=T)
 
 # merge the same Phylum variants by summing the MeanCov.Percent
+# dplyr
 merged.abun_anno.df <- abun_anno.df %>%
   group_by(Family) %>%
   summarise(MeanCov.Percent = sum(MeanCov.Percent, na.rm = TRUE)) %>%
@@ -110,10 +389,7 @@ ggplot(merged.abun_anno.df, aes(x = "", y = MeanCov.Percent, fill = Family)) +
   geom_text(aes(label = paste(Family,"(",round(MeanCov.Percent,2),"%)"),),
             position = position_stack(vjust =0.5)) +
   coord_polar(theta = "y")
-
 ```
-
-
 
 # 4 Host predicted annoatation
 
@@ -125,10 +401,5 @@ host_genus_split <- strsplit(host.df$Host.genus,";")
 
 host.df$Host.genus.short <- sapply(host_genus_split,"[",6)
 
-host.df$Host.genus
+host.df$Host.genus.short
 ```
-
-
-
-
-
