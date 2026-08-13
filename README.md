@@ -6,7 +6,7 @@ Let's focus on the analysis process itself.
 
 # How to Use This Project?
 
-## 2025年7月培训
+## 2026年8月培训
 
 1. [Methodology](../../wiki/Methodology-zh): 生信方法学、准备工作与基础操作
 2. [Virome Analysis in Metagenomics](../../wiki/Virome-Analysis-in-Metagenomics): 病毒宏基因组学分析流程
